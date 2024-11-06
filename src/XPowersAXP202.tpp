@@ -906,10 +906,9 @@ public:
      */
     void clearIrqStatus(void)
     {
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 5; i++) {
             writeRegister(XPOWERS_AXP202_INTSTS1 + i, 0xFF);
         }
-        writeRegister(XPOWERS_AXP202_INTSTS5, 0xFF);
     }
 
     /**

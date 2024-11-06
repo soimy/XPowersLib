@@ -154,7 +154,7 @@
 
 #define XPOWERS_AXP202_LDO3_VOL_MIN                     (700u)
 #define XPOWERS_AXP202_LDO3_VOL_MAX                     (3500u)
-#define XPOWERS_AXP202_LDO3_VOL_STEPS                   (100u)
+#define XPOWERS_AXP202_LDO3_VOL_STEPS                   (25u)
 
 #define XPOWERS_AXP202_DC2_VOL_STEPS                    (25u)
 #define XPOWERS_AXP202_DC2_VOL_MIN                      (700u)
