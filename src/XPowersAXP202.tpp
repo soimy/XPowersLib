@@ -1391,6 +1391,11 @@ public:
 
     int getBatteryPercent(void)
     {
+#if CONFIG_XPOWERS_BATT_PERCENTAGE_USE_REG
+        int data = readRegister(XPOWERS_AXP202_BATT_PERCENTAGE);
+        uint8_t percent = data & 0x7F;
+        return (int)((percent / 127.0) * 100);
+#else
         if (!isBatteryConnect()) {
             return -1;
         }
@@ -1407,6 +1412,7 @@ public:
                        (int)(table[i] - table[i - 1]);;
         }
         return 100;
+#endif
     }
 
     uint8_t getChipID(void)

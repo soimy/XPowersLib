@@ -56,6 +56,12 @@ menu "XPowersLib Configuration"
         default 35
         help
             PMU interrupt pin.
-
+    
+    config XPOWERS_BATT_PERCENTAGE_USE_REG
+        bool "Use PMU register to get battery percentage"
+        default y
+        help
+            Use PMU register to get battery percentage.
+            If not selected, use ADC to get battery percentage.
 
 endmenu
