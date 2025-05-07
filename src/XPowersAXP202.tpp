@@ -337,6 +337,70 @@ public:
         return (val * XPOWERS_AXP202_SYS_VOL_STEPS) + XPOWERS_AXP202_VOFF_VOL_MIN;
     }
 
+    // Set the level1 warning low voltage inside the PMU,
+    // below this value will trigger irq lowVolWarning,Adjustment range 2600mV ~ 3300mV
+    bool setSysPowerWarningLevel1Voltage(uint16_t millivolt)
+    {
+        if (millivolt % XPOWERS_AXP202_SYS_VOL_STEPS) {
+            log_e("Mistake ! The steps is must %u mV", XPOWERS_AXP202_SYS_VOL_STEPS);
+            return false;
+        }
+        if (millivolt < XPOWERS_AXP202_VOFF_VOL_MIN) {
+            log_e("Mistake ! SYS minimum output voltage is  %umV", XPOWERS_AXP202_VOFF_VOL_MIN);
+            return false;
+        } else if (millivolt > XPOWERS_AXP202_VOFF_VOL_MAX) {
+            log_e("Mistake ! SYS maximum output voltage is  %umV", XPOWERS_AXP202_VOFF_VOL_MAX);
+            return false;
+        }
+
+        int val = readRegister(XPOWERS_AXP202_APS_WARNING1);
+        if (val == -1)return false;
+        val &= 0xF8;
+        val |= (millivolt - XPOWERS_AXP202_VOFF_VOL_MIN) / XPOWERS_AXP202_SYS_VOL_STEPS;
+        return 0 ==  writeRegister(XPOWERS_AXP202_APS_WARNING1, val);
+    }
+
+    uint16_t getSysPowerLowLevel1Voltage()
+    {
+        int val = readRegister(XPOWERS_AXP202_APS_WARNING1);
+        if (val == -1)return 0;
+        val &= 0x07;
+        return (val * XPOWERS_AXP202_SYS_VOL_STEPS) + XPOWERS_AXP202_VOFF_VOL_MIN;
+    }
+
+    /**
+     * @brief  Set the level2 warning low voltage inside the PMU,
+     *         below this value will trigger irq lowVolWarning,Adjustment range 2600mV ~ 3300mV
+     */
+    bool setSysPowerWarningLevel2Voltage(uint16_t millivolt)
+    {
+        if (millivolt % XPOWERS_AXP202_SYS_VOL_STEPS) {
+            log_e("Mistake ! The steps is must %u mV", XPOWERS_AXP202_SYS_VOL_STEPS);
+            return false;
+        }
+        if (millivolt < XPOWERS_AXP202_VOFF_VOL_MIN) {
+            log_e("Mistake ! SYS minimum output voltage is  %umV", XPOWERS_AXP202_VOFF_VOL_MIN);
+            return false;
+        } else if (millivolt > XPOWERS_AXP202_VOFF_VOL_MAX) {
+            log_e("Mistake ! SYS maximum output voltage is  %umV", XPOWERS_AXP202_VOFF_VOL_MAX);
+            return false;
+        }
+
+        int val = readRegister(XPOWERS_AXP202_APS_WARNING2);
+        if (val == -1)return false;
+        val &= 0xF8;
+        val |= (millivolt - XPOWERS_AXP202_VOFF_VOL_MIN) / XPOWERS_AXP202_SYS_VOL_STEPS;
+        return 0 ==  writeRegister(XPOWERS_AXP202_APS_WARNING2, val);
+    }
+
+    uint16_t getSysPowerLowLevel2Voltage()
+    {
+        int val = readRegister(XPOWERS_AXP202_APS_WARNING2);
+        if (val == -1)return 0;
+        val &= 0x07;
+        return (val * XPOWERS_AXP202_SYS_VOL_STEPS) + XPOWERS_AXP202_VOFF_VOL_MIN;
+    }
+
     /**
      * @brief  Set shutdown, calling shutdown will turn off all power channels,
      *         only VRTC belongs to normal power supply
@@ -1076,6 +1140,11 @@ public:
     bool isLowVoltageLevel2Irq(void)
     {
         return (bool)(statusRegister[3] & _BV(0));
+    }
+    
+    bool isLowVoltageLevel1Irq(void)
+    {
+        return (bool)(statusRegister[3] & _BV(1));
     }
 
     //IRQ5 REGISTER :
