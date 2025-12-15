@@ -338,19 +338,18 @@ public:
     }
 
     // Set the level1 warning low voltage inside the PMU,
-    // below this value will trigger irq lowVolWarning,Adjustment range 2600mV ~ 3300mV
+    // below this value will trigger irq lowVolWarning,Adjustment range 2867mV + 1.4mV * n * 4
+    // REG3AH Bit[7:0]
     bool setSysPowerWarningLevel1Voltage(uint16_t millivolt)
     {
-        if (millivolt < XPOWERS_AXP202_VOFF_VOL_MIN) {
-            log_e("Mistake ! SYS minimum output voltage is  %umV", XPOWERS_AXP202_VOFF_VOL_MIN);
+        if (millivolt < XPOWERS_AXP202_VWARNING_VOL_MIN) {
+            log_e("Mistake ! SYS minimum output voltage is  %umV", XPOWERS_AXP202_VWARNING_VOL_MIN);
             return false;
-        
         }
 
         int val = readRegister(XPOWERS_AXP202_APS_WARNING1);
         if (val == -1)return false;
-        val &= 0xF8;
-        val |= (uint16_t)((millivolt - XPOWERS_AXP202_VWARNING_VOL_MIN) / XPOWERS_AXP202_IPSOUT_VOL_STEPS);
+        val = (int)(((float)millivolt - XPOWERS_AXP202_VWARNING_VOL_MIN) / XPOWERS_AXP202_IPSOUT_VOL_STEPS);
         return 0 ==  writeRegister(XPOWERS_AXP202_APS_WARNING1, val);
     }
 
@@ -358,25 +357,24 @@ public:
     {
         int val = readRegister(XPOWERS_AXP202_APS_WARNING1);
         if (val == -1)return 0;
-        val &= 0x07;
-        return (uint16_t)((val * XPOWERS_AXP202_IPSOUT_VOL_STEPS) + XPOWERS_AXP202_VWARNING_VOL_MIN);
+        return (int)((val * XPOWERS_AXP202_IPSOUT_VOL_STEPS) + XPOWERS_AXP202_VWARNING_VOL_MIN);
     }
 
     /**
-     * @brief  Set the level2 warning low voltage inside the PMU,
-     *         below this value will trigger irq lowVolWarning,Adjustment range 2600mV ~ 3300mV
+     * Set the level2 warning low voltage inside the PMU,
+     * below this value will trigger irq lowVolWarning,Adjustment range 2867mV + 1.4mV * n * 4
+     * REG3BH Bit[7:0]
      */
     bool setSysPowerWarningLevel2Voltage(uint16_t millivolt)
     {
-        if (millivolt < XPOWERS_AXP202_VOFF_VOL_MIN) {
-            log_e("Mistake ! SYS minimum output voltage is  %umV", XPOWERS_AXP202_VOFF_VOL_MIN);
+        if (millivolt < XPOWERS_AXP202_VWARNING_VOL_MIN) {
+            log_e("Mistake ! SYS minimum output voltage is  %umV", XPOWERS_AXP202_VWARNING_VOL_MIN);
             return false;
         } 
 
         int val = readRegister(XPOWERS_AXP202_APS_WARNING2);
         if (val == -1)return false;
-        val &= 0xF8;
-        val |= (uint16_t)((millivolt - XPOWERS_AXP202_VWARNING_VOL_MIN) / XPOWERS_AXP202_IPSOUT_VOL_STEPS);
+        val = (int)(((float)millivolt - XPOWERS_AXP202_VWARNING_VOL_MIN) / XPOWERS_AXP202_IPSOUT_VOL_STEPS);
         return 0 ==  writeRegister(XPOWERS_AXP202_APS_WARNING2, val);
     }
 
@@ -384,8 +382,7 @@ public:
     {
         int val = readRegister(XPOWERS_AXP202_APS_WARNING2);
         if (val == -1)return 0;
-        val &= 0x07;
-        return (uint16_t)((val * XPOWERS_AXP202_IPSOUT_VOL_STEPS) + XPOWERS_AXP202_VWARNING_VOL_MIN);
+        return (int)((val * XPOWERS_AXP202_IPSOUT_VOL_STEPS) + XPOWERS_AXP202_VWARNING_VOL_MIN);
     }
 
     /**
