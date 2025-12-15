@@ -397,7 +397,7 @@ typedef enum __xpowers_axp202_irq {
 
     //! IRQ4 REG 43H
     XPOWERS_AXP202_APS_LOW_VOL_LEVEL2_IRQ   = _BV(24),  //APS low-voltage, IRQ enable（LEVEL2）
-    XPOWERS_APX202_APS_LOW_VOL_LEVEL1_IRQ   = _BV(25),  //APS low-voltage, IRQ enable（LEVEL1）
+    XPOWERS_AXP202_APS_LOW_VOL_LEVEL1_IRQ   = _BV(25),  //APS low-voltage, IRQ enable（LEVEL1）
     XPOWERS_AXP202_VBUS_SESSION_END_IRQ     = _BV(26),  //VBUS Session End IRQ enable
     XPOWERS_AXP202_VBUS_SESSION_AB_IRQ      = _BV(27),  //VBUS Session A/B IRQ enable
     XPOWERS_AXP202_VBUS_INVALID_IRQ         = _BV(28),  //VBUS invalid, IRQ enable
