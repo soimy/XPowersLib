@@ -341,22 +341,16 @@ public:
     // below this value will trigger irq lowVolWarning,Adjustment range 2600mV ~ 3300mV
     bool setSysPowerWarningLevel1Voltage(uint16_t millivolt)
     {
-        if (millivolt % XPOWERS_AXP202_SYS_VOL_STEPS) {
-            log_e("Mistake ! The steps is must %u mV", XPOWERS_AXP202_SYS_VOL_STEPS);
-            return false;
-        }
         if (millivolt < XPOWERS_AXP202_VOFF_VOL_MIN) {
             log_e("Mistake ! SYS minimum output voltage is  %umV", XPOWERS_AXP202_VOFF_VOL_MIN);
             return false;
-        } else if (millivolt > XPOWERS_AXP202_VOFF_VOL_MAX) {
-            log_e("Mistake ! SYS maximum output voltage is  %umV", XPOWERS_AXP202_VOFF_VOL_MAX);
-            return false;
+        
         }
 
         int val = readRegister(XPOWERS_AXP202_APS_WARNING1);
         if (val == -1)return false;
         val &= 0xF8;
-        val |= (millivolt - XPOWERS_AXP202_VOFF_VOL_MIN) / XPOWERS_AXP202_SYS_VOL_STEPS;
+        val |= (uint16_t)((millivolt - XPOWERS_AXP202_VWARNING_VOL_MIN) / XPOWERS_AXP202_IPSOUT_VOL_STEPS);
         return 0 ==  writeRegister(XPOWERS_AXP202_APS_WARNING1, val);
     }
 
@@ -365,7 +359,7 @@ public:
         int val = readRegister(XPOWERS_AXP202_APS_WARNING1);
         if (val == -1)return 0;
         val &= 0x07;
-        return (val * XPOWERS_AXP202_SYS_VOL_STEPS) + XPOWERS_AXP202_VOFF_VOL_MIN;
+        return (uint16_t)((val * XPOWERS_AXP202_IPSOUT_VOL_STEPS) + XPOWERS_AXP202_VWARNING_VOL_MIN);
     }
 
     /**
@@ -374,22 +368,15 @@ public:
      */
     bool setSysPowerWarningLevel2Voltage(uint16_t millivolt)
     {
-        if (millivolt % XPOWERS_AXP202_SYS_VOL_STEPS) {
-            log_e("Mistake ! The steps is must %u mV", XPOWERS_AXP202_SYS_VOL_STEPS);
-            return false;
-        }
         if (millivolt < XPOWERS_AXP202_VOFF_VOL_MIN) {
             log_e("Mistake ! SYS minimum output voltage is  %umV", XPOWERS_AXP202_VOFF_VOL_MIN);
             return false;
-        } else if (millivolt > XPOWERS_AXP202_VOFF_VOL_MAX) {
-            log_e("Mistake ! SYS maximum output voltage is  %umV", XPOWERS_AXP202_VOFF_VOL_MAX);
-            return false;
-        }
+        } 
 
         int val = readRegister(XPOWERS_AXP202_APS_WARNING2);
         if (val == -1)return false;
         val &= 0xF8;
-        val |= (millivolt - XPOWERS_AXP202_VOFF_VOL_MIN) / XPOWERS_AXP202_SYS_VOL_STEPS;
+        val |= (uint16_t)((millivolt - XPOWERS_AXP202_VWARNING_VOL_MIN) / XPOWERS_AXP202_IPSOUT_VOL_STEPS);
         return 0 ==  writeRegister(XPOWERS_AXP202_APS_WARNING2, val);
     }
 
@@ -398,7 +385,7 @@ public:
         int val = readRegister(XPOWERS_AXP202_APS_WARNING2);
         if (val == -1)return 0;
         val &= 0x07;
-        return (val * XPOWERS_AXP202_SYS_VOL_STEPS) + XPOWERS_AXP202_VOFF_VOL_MIN;
+        return (uint16_t)((val * XPOWERS_AXP202_IPSOUT_VOL_STEPS) + XPOWERS_AXP202_VWARNING_VOL_MIN);
     }
 
     /**

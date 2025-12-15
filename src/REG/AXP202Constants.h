@@ -172,6 +172,8 @@
 #define XPOWERS_AXP202_SYS_VOL_STEPS                    (100)
 #define XPOWERS_AXP202_VOFF_VOL_MIN                     (2600)
 #define XPOWERS_AXP202_VOFF_VOL_MAX                     (3300)
+#define XPOWERS_AXP202_VWARNING_VOL_MIN                 (2867) // based on datasheet 2.8672V
+#define XPOWERS_AXP202_IPSOUT_VOL_STEPS                 (5.6)  // based on datasheet 1.4mVx4 steps
 
 #define XPOWERS_AXP202_CHG_EXT_CURR_MIN                 (300)
 #define XPOWERS_AXP202_CHG_EXT_CURR_MAX                 (1000)
