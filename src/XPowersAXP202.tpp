@@ -464,10 +464,10 @@ public:
     {
         switch (opt) {
         case XPOWERS_AXP202_CHG_ITERM_LESS_10_PERCENT:
-            clrRegisterBit(XPOWERS_AXP202_CHARGE1, 0);
+            clrRegisterBit(XPOWERS_AXP202_CHARGE1, 4);
             break;
         case XPOWERS_AXP202_CHG_ITERM_LESS_15_PERCENT:
-            setRegisterBit(XPOWERS_AXP202_CHARGE1, 0);
+            setRegisterBit(XPOWERS_AXP202_CHARGE1, 4);
             break;
         default:
             break;
