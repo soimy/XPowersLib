@@ -217,20 +217,14 @@ enablePwronShutPMIC	KEYWORD2
 disablePwronShutPMIC	KEYWORD2
 resetPmuSocSystem	KEYWORD2
 softPowerOff	KEYWORD2
-setBatfetDieOverTempLevel1	KEYWORD2
-getBatfetDieOverTempLevel1	KEYWORD2
-enableBatfetDieOverTempDetect	KEYWORD2
-disableBatfetDieOverTempDetect	KEYWORD2
+enableBATFET	KEYWORD2
+disableBATFET	KEYWORD2
 setDieOverTempLevel1	KEYWORD2
 getDieOverTempLevel1	KEYWORD2
 enableDieOverTempDetect	KEYWORD2
 disableDieOverTempDetect	KEYWORD2
 getVbusVoltageLimit	KEYWORD2
 getVinCurrentLimit	KEYWORD2
-resetGauge	KEYWORD2
-resetGaugeBesides	KEYWORD2
-enableGauge	KEYWORD2
-disableGauge	KEYWORD2
 enableButtonBatteryCharge	KEYWORD2
 disableButtonBatteryCharge	KEYWORD2
 enableCellbatteryCharge	KEYWORD2
@@ -440,7 +434,6 @@ setChargeTargetVoltage	KEYWORD2
 getChargeTargetVoltage	KEYWORD2
 setThermaThreshold	KEYWORD2
 getThermaThreshold	KEYWORD2
-getBatteryParameter	KEYWORD2
 isDropWarningLevel2Irq	KEYWORD2
 isDropWarningLevel1Irq	KEYWORD2
 isGaugeWdtTimeoutIrq	KEYWORD2
@@ -455,6 +448,8 @@ isBatfetOverCurrentIrq	KEYWORD2
 isBatDieOverTemperatureIrq	KEYWORD2
 isChargeOverTimeoutIrq	KEYWORD2
 isBatOverVoltageIrq	KEYWORD2
+writeGaugeData	KEYWORD2
+compareGaugeData	KEYWORD2
 
 
 # XPowersLibInterface
@@ -1118,7 +1113,7 @@ XPOWERS_AXP2101_BAT_INSERT_IRQ	LITERAL1
 XPOWERS_AXP2101_VBUS_REMOVE_IRQ	LITERAL1
 XPOWERS_AXP2101_VBUS_INSERT_IRQ	LITERAL1
 XPOWERS_AXP2101_BAT_OVER_VOL_IRQ	LITERAL1
-XPOWERS_AXP2101_CHAGER_TIMER_IRQ	LITERAL1
+XPOWERS_AXP2101_CHARGER_TIMER_IRQ	LITERAL1
 XPOWERS_AXP2101_DIE_OVER_TEMP_IRQ	LITERAL1
 XPOWERS_AXP2101_BAT_CHG_START_IRQ	LITERAL1
 XPOWERS_AXP2101_BAT_CHG_DONE_IRQ	LITERAL1

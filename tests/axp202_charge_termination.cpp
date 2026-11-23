@@ -2,7 +2,7 @@
 #include <cstdio>
 #include <cstring>
 
-#include "XPowersAXP202.tpp"
+#include "XPowersAXP202.hpp"
 
 static uint8_t registers[256];
 static bool read_fails;

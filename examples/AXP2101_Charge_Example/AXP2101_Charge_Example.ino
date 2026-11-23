@@ -170,11 +170,6 @@ void setup()
     // Set the power level to be lower than 5% and turn off the power supply
     power.setLowBatShutdownThreshold(5);
 
-    /*
-    Turn on the learning battery curve,
-    And write the learned battery curve into the ROM
-    */
-    power.fuelGaugeControl(true, true);
 
     Serial.println();
 
@@ -253,6 +248,9 @@ void loop()
         if (power.isGaugeWdtTimeoutIrq()) {
             Serial.println("isWdtTimeout");
         }
+        if (power.isStateOfChargeLowIrq()) {
+            Serial.println("isStateOfChargeLow");
+        }
         if (power.isBatChargerOverTemperatureIrq()) {
             Serial.println("isBatChargeOverTemperature");
         }
@@ -323,4 +321,3 @@ void loop()
     }
     delay(10);
 }
-

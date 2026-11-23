@@ -1,6 +1,7 @@
 #pragma once
 
 #define AXP202_SLAVE_ADDRESS                            (0x35)
+#define AXP202_SLAVE_ADDRESS_ALT                        (0x34)
 
 #define XPOWERS_AXP202_CHIP_ID                          (0x41)
 
@@ -179,7 +180,7 @@
 #define XPOWERS_AXP202_CHG_EXT_CURR_MAX                 (1000)
 #define XPOWERS_AXP202_CHG_EXT_CURR_STEP                (100)
 
-#define XPOWERS_AXP202_INERNAL_TEMP_OFFSET              (144.7)
+#define XPOWERS_AXP202_INTERNAL_TEMP_OFFSET              (144.7)
 
 
 

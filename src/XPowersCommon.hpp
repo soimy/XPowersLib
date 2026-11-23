@@ -36,9 +36,9 @@
 #if defined(ARDUINO)
 #include <Wire.h>
 #elif defined(ESP_PLATFORM)
+#include <cstring>
 #include "esp_log.h"
 #include "esp_err.h"
-#include <cstring>
 #include "esp_idf_version.h"
 #if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5,0,0)) && defined(CONFIG_XPOWERS_ESP_IDF_NEW_API)
 #include "driver/i2c_master.h"
@@ -48,9 +48,7 @@
 #define XPOWERSLIB_I2C_MASTER_RX_BUF_DISABLE   0                          /*!< I2C master doesn't need buffer */
 #define XPOWERSLIB_I2C_MASTER_TIMEOUT_MS       1000
 #endif //ESP_IDF_VERSION
-
-
-#endif //ESP_PLATFORM
+#endif //defined(ARDUINO)
 
 #define XPOWERSLIB_I2C_MASTER_SPEED            400000
 
@@ -66,7 +64,6 @@
 #endif
 
 
-
 #define XPOWERS_ATTR_NOT_IMPLEMENTED    __attribute__((error("Not implemented")))
 #define IS_BIT_SET(val,mask)            (((val)&(mask)) == (mask))
 
@@ -75,14 +72,18 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#define log_e(__info,...)          printf("error :"  __info,##__VA_ARGS__)
-#define log_i(__info,...)          printf("info  :"  __info,##__VA_ARGS__)
-#define log_d(__info,...)          printf("debug :"  __info,##__VA_ARGS__)
+#define log_e(__info, ...)  printf("error :"  __info,##__VA_ARGS__)
+#define log_i(__info, ...)  printf("info  :"  __info,##__VA_ARGS__)
+#define log_d(__info, ...)  printf("debug :"  __info,##__VA_ARGS__)
+#elif defined(ESP_PLATFORM)
+#define log_e(__fmt, ...)  ESP_LOGE("XPowers", __fmt, ##__VA_ARGS__);
+#define log_i(__fmt, ...)  ESP_LOGI("XPowers", __fmt, ##__VA_ARGS__);
+#define log_d(__fmt, ...)  ESP_LOGD("XPowers", __fmt, ##__VA_ARGS__);
 #else
 #define log_e(...)
 #define log_i(...)
 #define log_d(...)
-#endif
+#endif //linux
 
 #define LOW                 0x0
 #define HIGH                0x1
@@ -97,6 +98,12 @@
 
 #define RISING              0x01
 #define FALLING             0x02
+#endif //!defined(ARDUINO)
+
+#if defined(ARDUINO_ARCH_MBED) || defined(ARDUINO_ARCH_ZEPHYR)
+#define log_e(...)
+#define log_i(...)
+#define log_d(...)
 #endif
 
 #ifndef ESP32
@@ -113,7 +120,7 @@
 #ifndef log_d
 #define log_d(fmt, ...)     Serial.printf("[D][%s:%d] " fmt "\n", LOG_FILE_LINE_INFO, ##__VA_ARGS__)
 #endif
-#endif
+#endif //ESP32
 
 
 #if defined(NRF52840_XXAA) || defined(NRF52832_XXAA)
@@ -146,7 +153,9 @@ public:
 
 #if defined(NRF52840_XXAA) || defined(NRF52832_XXAA)
         if (__sda != 0xFF && __scl != 0xFF) {
+  #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
             __wire->setPins(__sda, __scl);
+  #endif /* ARDUINO_ARCH_MBED || ZEPHYR */
         }
         __wire->begin();
 #elif defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_STM32)
@@ -218,6 +227,7 @@ public:
         if (!__has_init) {
             // Initialization failed, delete device
             i2c_master_bus_rm_device(__i2c_device);
+            __i2c_device = NULL;
         }
         return __has_init;
     }
@@ -403,7 +413,7 @@ public:
     {
         int h8 = readRegister(highReg);
         int l4 = readRegister(lowReg);
-        if (h8 == -1 || l4 == -1)return 0;
+        if (h8 == -1 || l4 == -1)return UINT16_MAX;
         return (h8 << 4) | (l4 & 0x0F);
     }
 
@@ -411,7 +421,7 @@ public:
     {
         int h8 = readRegister(highReg);
         int l5 = readRegister(lowReg);
-        if (h8 == -1 || l5 == -1)return 0;
+        if (h8 == -1 || l5 == -1)return UINT16_MAX;
         return (h8 << 5) | (l5 & 0x1F);
     }
 
@@ -419,7 +429,7 @@ public:
     {
         int h6 = readRegister(highReg);
         int l8 = readRegister(lowReg);
-        if (h6 == -1 || l8 == -1)return 0;
+        if (h6 == -1 || l8 == -1)return UINT16_MAX;
         return ((h6 & 0x3F) << 8) | l8;
     }
 
@@ -445,7 +455,9 @@ protected:
             log_i("SDA:%d SCL:%d", __sda, __scl);
 #if defined(NRF52840_XXAA) || defined(NRF52832_XXAA)
             if (__sda != 0xFF && __scl != 0xFF) {
+  #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
                 __wire->setPins(__sda, __scl);
+  #endif /* ARDUINO_ARCH_MBED || ZEPHYR */
             }
             __wire->begin();
 #elif defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_STM32)
@@ -475,7 +487,18 @@ protected:
 #endif  /*ESP_IDF_VERSION*/
 #endif  /*ESP_IDF_VERSION*/
         }
-#endif /*ARDUINO*/
+#elif defined(ESP_PLATFORM)
+#if defined(ESP_IDF_VERSION)
+#if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5,0,0)) && defined(CONFIG_XPOWERS_ESP_IDF_NEW_API)
+        if (__i2c_device) {
+            i2c_master_bus_rm_device(__i2c_device);
+            __i2c_device = NULL;
+        }
+        bus_handle = NULL;
+        __has_init = false;
+#endif  /*ESP_IDF_VERSION >= 5.0*/
+#endif  /*ESP_IDF_VERSION*/
+#endif  /*ARDUINO & ESP_PLATFORM*/
     }
 
 
@@ -490,20 +513,20 @@ protected:
     }
 
 protected:
-    bool        __has_init              = false;
+    bool        __has_init                  = false;
 #if defined(ARDUINO)
-    TwoWire     *__wire                 = NULL;
+    TwoWire     *__wire                     = NULL;
 #elif defined(ESP_PLATFORM)
     i2c_port_t  __i2c_num;
 #if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5,0,0)) && defined(CONFIG_XPOWERS_ESP_IDF_NEW_API)
-    i2c_master_bus_handle_t  bus_handle;
-    i2c_master_dev_handle_t  __i2c_device;
+    i2c_master_bus_handle_t  bus_handle     = NULL;
+    i2c_master_dev_handle_t  __i2c_device   = NULL;
 #endif //ESP_IDF_VERSION
 
 #endif //ESP_PLATFORM
-    int         __sda                   = -1;
-    int         __scl                   = -1;
-    uint8_t     __addr                  = 0xFF;
-    iic_fptr_t  thisReadRegCallback     = NULL;
-    iic_fptr_t  thisWriteRegCallback    = NULL;
+    int         __sda                       = -1;
+    int         __scl                       = -1;
+    uint8_t     __addr                      = 0xFF;
+    iic_fptr_t  thisReadRegCallback         = NULL;
+    iic_fptr_t  thisWriteRegCallback        = NULL;
 };

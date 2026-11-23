@@ -121,7 +121,7 @@ _AXP2101_LDO_VOL5_CTRL = const(0x97)
 _AXP2101_LDO_VOL6_CTRL = const(0x98)
 _AXP2101_LDO_VOL7_CTRL = const(0x99)
 _AXP2101_LDO_VOL8_CTRL = const(0x9A)
-_AXP2101_BAT_PARAME = const(0xA1)
+_AXP2101_BAT_PARAMS = const(0xA1)
 _AXP2101_FUEL_GAUGE_CTRL = const(0xA2)
 _AXP2101_BAT_PERCENT_DATA = const(0xA4)
 # DCDC 1~5
@@ -455,7 +455,7 @@ class AXP2101(I2CInterface):
     XPOWERS_AXP2101_BAT_CHG_UNDER_TEMP_IRQ = const(1 << 2)
     # Battery Over Temperature in Charge mode IRQ(bcot_irq) enable
     XPOWERS_AXP2101_BAT_CHG_OVER_TEMP_IRQ = const(1 << 3)
-    # Gauge New SOC IRQ(lowsoc_irq) enable ???
+    # Gauge New SOC IRQ(lowsoc_irq) enable (low state of charge)
     XPOWERS_AXP2101_GAUGE_NEW_SOC_IRQ = const(1 << 4)
     # Gauge Watchdog Timeout IRQ(gwdt_irq) enable
     XPOWERS_AXP2101_WDT_TIMEOUT_IRQ = const(1 << 5)
@@ -486,7 +486,7 @@ class AXP2101(I2CInterface):
     # Battery Over Voltage Protection IRQ(bovp_irq) enable
     XPOWERS_AXP2101_BAT_OVER_VOL_IRQ = const(1 << 16)
     # Charger Safety Timer1/2 expire IRQ(chgte_irq) enable
-    XPOWERS_AXP2101_CHAGER_TIMER_IRQ = const(1 << 17)
+    XPOWERS_AXP2101_CHARGER_TIMER_IRQ = const(1 << 17)
     # DIE Over Temperature level1 IRQ(dotl1_irq) enable
     XPOWERS_AXP2101_DIE_OVER_TEMP_IRQ = const(1 << 18)
     XPOWERS_AXP2101_BAT_CHG_START_IRQ = const(
@@ -595,24 +595,11 @@ class AXP2101(I2CInterface):
     def shutdown(self) -> None:
         super().setRegisterBit(_AXP2101_COMMON_CONFIG, 0)
 
-    # @brief  BATFET control / REG 12H
-    # @note   DIE Over Temperature Protection Level1 Configuration
-    # @param   opt: 0:115 , 1:125 , 2:135
-    def setBatfetDieOverTempLevel1(self, opt: int) -> None:
-        if not 0 <= opt <= 3:
-            raise ValueError("param must be a value within 0-3!")
-        val = super().readRegister(_AXP2101_BATFET_CTRL)[0]
-        val &= 0xF9
-        super().writeRegister(_AXP2101_BATFET_CTRL, val | (opt << 1))
+    def enableBATFET(self) -> None:
+        super().setRegisterBit(_AXP2101_BATFET_CTRL, 3)
 
-    def getBatfetDieOverTempLevel1(self) -> int:
-        return (super().readRegister(_AXP2101_BATFET_CTRL)[0] & 0x06)
-
-    def enableBatfetDieOverTempDetect(self) -> None:
-        super().setRegisterBit(_AXP2101_BATFET_CTRL, 0)
-
-    def disableBatfetDieOverTempDetect(self) -> None:
-        super().clrRegisterBit(_AXP2101_BATFET_CTRL, 0)
+    def disableBATFET(self) -> None:
+        super().clrRegisterBit(_AXP2101_BATFET_CTRL, 3)
 
     # @param   opt: 0:115 , 1:125 , 2:135
     def setDieOverTempLevel1(self, opt: int) -> None:
@@ -664,21 +651,6 @@ class AXP2101(I2CInterface):
      # @retval View the related chip type _axp2101_vbus_cur_limit_t enumeration parameters in "Params.hpp"
     def getVbusCurrentLimit(self) -> int:
         return (super().readRegister(_AXP2101_INPUT_CUR_LIMIT_CTRL)[0] & 0x07)
-
-    # @brief  Reset the fuel gauge
-    def resetGauge(self) -> None:
-        super().setRegisterBit(_AXP2101_RESET_FUEL_GAUGE, 3)
-
-    # @brief   reset the gauge besides reset
-    def resetGaugeBesides(self) -> None:
-        super().setRegisterBit(_AXP2101_RESET_FUEL_GAUGE, 2)
-
-    # @brief Gauge Module
-    def enableGauge(self) -> None:
-        super().setRegisterBit(_AXP2101_CHARGE_GAUGE_WDT_CTRL, 3)
-
-    def disableGauge(self) -> None:
-        super().clrRegisterBit(_AXP2101_CHARGE_GAUGE_WDT_CTRL, 3)
 
     # @brief  Button Battery charge
     def enableButtonBatteryCharge(self) -> None:
@@ -762,7 +734,7 @@ class AXP2101(I2CInterface):
         super().writeRegister(_AXP2101_LOW_BAT_WARN_SET, val | ((opt - 5) << 4))
 
     def getLowBatWarnThreshold(self) -> int:
-        return (super().readRegister(_AXP2101_LOW_BAT_WARN_SET)[0] & 0xF0) >> 4
+        return ((super().readRegister(_AXP2101_LOW_BAT_WARN_SET)[0] & 0xF0) >> 4) + 5
 
     # @brief Low battery shutdown threshold 0-15%, 1% per step
     def setLowBatShutdownThreshold(self, opt: int) -> None:
@@ -1870,11 +1842,11 @@ class AXP2101(I2CInterface):
     # # @retval None
     def setPrechargeCurr(self, opt: int) -> None:
         val = super().readRegister(_AXP2101_IPRECHG_SET)[0]
-        val &= 0xFC
+        val &= 0xF0
         super().writeRegister(_AXP2101_IPRECHG_SET, val | opt)
 
     def getPrechargeCurr(self) -> None:
-        return (super().readRegister(_AXP2101_IPRECHG_SET)[0] & 0x03)
+        return (super().readRegister(_AXP2101_IPRECHG_SET)[0] & 0x0F)
 
      # @brief Set charge current.
      # @param   opt: See _axp2101_chg_curr_t enum for details.
@@ -1942,20 +1914,6 @@ class AXP2101(I2CInterface):
     def getThermaThreshold(self) -> int:
         return (super().readRegister(_AXP2101_THE_REGU_THRES_SET)[0] & 0x03)
 
-    def getBatteryParameter(self) -> int:
-        return super().readRegister(_AXP2101_BAT_PARAME)[0]
-
-    def fuelGaugeControl(self, writeROM: bool, enable: bool) -> int:
-        if writeROM:
-            super().clrRegisterBit(_AXP2101_FUEL_GAUGE_CTRL, 4)
-        else:
-            super().setRegisterBit(_AXP2101_FUEL_GAUGE_CTRL, 4)
-
-        if enable:
-            super().setRegisterBit(_AXP2101_FUEL_GAUGE_CTRL, 0)
-        else:
-            super().clrRegisterBit(_AXP2101_FUEL_GAUGE_CTRL, 0)
-
     #  Interrupt status/control functions
     # @brief  Get the interrupt controller mask value.
     # @retval   Mask value corresponds to _axp2101_irq_t ,
@@ -1997,6 +1955,13 @@ class AXP2101(I2CInterface):
 
     def isGaugeWdtTimeoutIrq(self) -> bool:
         mask = self.XPOWERS_AXP2101_WDT_TIMEOUT_IRQ
+        if self.intRegister[0] & mask:
+            return super()._IS_BIT_SET(self.statusRegister[0], mask)
+        else:
+            return False
+
+    def isStateOfChargeLowIrq(self) -> bool:
+        mask = self.XPOWERS_AXP2101_GAUGE_NEW_SOC_IRQ
         if self.intRegister[0] & mask:
             return super()._IS_BIT_SET(self.statusRegister[0], mask)
         else:
@@ -2131,7 +2096,7 @@ class AXP2101(I2CInterface):
             return False
 
     def isChargeOverTimeoutIrq(self) -> bool:
-        mask = self.XPOWERS_AXP2101_CHAGER_TIMER_IRQ >> 16
+        mask = self.XPOWERS_AXP2101_CHARGER_TIMER_IRQ >> 16
         if self.intRegister[2] & mask:
             return super()._IS_BIT_SET(self.statusRegister[2], mask)
         else:
@@ -2189,3 +2154,32 @@ class AXP2101(I2CInterface):
             val = super().readRegister(_AXP2101_INTEN1+i)[0]
             print('[{0}]HEX={1} BIN={2}'.format(
                 i, hex(val), self.__to_bin(val, 8)))
+
+    def writeGaugeData(self, data: bytearray) -> bool:
+        if len(data) != 128 or data is None:
+            return False
+        super().setRegisterBit(_AXP2101_RESET_FUEL_GAUGE, 2)
+        super().clrRegisterBit(_AXP2101_RESET_FUEL_GAUGE, 2)
+        super().clrRegisterBit(_AXP2101_FUEL_GAUGE_CTRL, 0)
+        super().setRegisterBit(_AXP2101_FUEL_GAUGE_CTRL, 0)
+        for i in range(128):
+            super().writeRegister(_AXP2101_BAT_PARAMS, data[i])
+        super().clrRegisterBit(_AXP2101_FUEL_GAUGE_CTRL, 0)
+        super().setRegisterBit(_AXP2101_FUEL_GAUGE_CTRL, 0)
+
+        return self.compareGaugeData(data, len(data))
+
+    def compareGaugeData(self, data: bytearray, length: int) -> bool:
+        if length != 128 or data is None:
+            return False
+        buffer = bytearray(128)
+        super().clrRegisterBit(_AXP2101_FUEL_GAUGE_CTRL, 0)
+        super().setRegisterBit(_AXP2101_FUEL_GAUGE_CTRL, 0)
+        for i in range(128):
+            buffer[i] = super().readRegister(_AXP2101_BAT_PARAMS)
+        super().clrRegisterBit(_AXP2101_FUEL_GAUGE_CTRL, 0)
+        super().setRegisterBit(_AXP2101_FUEL_GAUGE_CTRL, 4)
+        super().setRegisterBit(_AXP2101_RESET_FUEL_GAUGE, 2)
+        super().clrRegisterBit(_AXP2101_RESET_FUEL_GAUGE, 2)
+        return data == buffer
+    
